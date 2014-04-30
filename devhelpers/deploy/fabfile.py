@@ -9,9 +9,19 @@ from fabric.operations import put
 BUILDROOT = '~/build'
 
 
+def service(target, action):
+    if (target in ('sanlock', 'supervdsmd', 'vdsmd', 'libvirtd') and
+        action in ('stop', 'start', 'restart', 'status')):
+        run('sudo service %s %s' % (target, action))
+
+
 def status():
-    for (name, ver, rev, arch) in sorted(find_pkgs()):
-        print '%24s: %s-%s (%s)' % (name, ver, rev, arch)
+    pkgs = find_pkgs()
+    if pkgs:
+        for (name, ver, rev, arch) in sorted(pkgs):
+            print '%24s: %s-%s (%s)' % (name, ver, rev, arch)
+    else:
+        print 'VDSM not installed'
 
 
 def clean():
@@ -54,18 +64,31 @@ def rpm():
 
 
 def update():
-    todo = [ os.path.join(arch, name + '*')
-             for (name, ver, rev, arch) in find_pkgs() ]
-    run('sudo rpm -Uvh --force %s' % ' '.join(todo))
+    pkgs = find_pkgs()
+    if not pkgs:
+        # default
+        pkgs = [('vdsm', None, None, 'x86_64'),
+                ('vdsm-python', None, None, 'x86_64'),
+                ('vdsm-api', None, None, 'noarch'),
+                ('vdsm-xmlrpc', None, None, 'noarch'),
+                ('vdsm-cli', None, None, 'noarch'),
+                ('vdsm-python-zombiereaper', None, None, 'noarch')]
+    run('sudo rpm -Uvh --force %s' % ' '.join(
+        os.path.join(arch, name + '*') for (name, ver, rev, arch) in pkgs))
 
 
 def find_pkgs():
     with quiet():
         out = run('rpm -qa | grep vdsm')
+    res = []
     for desc in [ line.strip() for line in out.split('\n') ]:
-        pkg, tag, arch = desc.rsplit('.', 2)
-        name, ver, rev = pkg.rsplit('-', 2)
-        yield (name, ver, rev, arch)
+        try:
+            pkg, tag, arch = desc.rsplit('.', 2)
+            name, ver, rev = pkg.rsplit('-', 2)
+            res.append((name, ver, rev, arch))
+        except (IndexError, ValueError):
+            return []
+    return res
 
 
 def rpmdirs():
