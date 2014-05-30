@@ -2,19 +2,15 @@ import os.path
 import tempfile
 
 from fabric.api import run
-from fabric.context_managers import cd, quiet
+from fabric.context_managers import cd, quiet, hide
 from fabric.operations import put
+from fabric.decorators import task
 
 
 BUILDROOT = '~/build'
 
 
-def service(target, action):
-    if (target in ('sanlock', 'supervdsmd', 'vdsmd', 'libvirtd') and
-        action in ('stop', 'start', 'restart', 'status')):
-        run('sudo service %s %s' % (target, action))
-
-
+@task
 def status():
     pkgs = find_pkgs()
     if pkgs:
@@ -24,12 +20,13 @@ def status():
         print 'VDSM not installed'
 
 
+@task
 def clean():
     with cd(BUILDROOT):
         run('rm -rf ./vdsm*')
 
-
-def deploy(tarpath):
+@task
+def vdeploy(tarpath):
     build_dir, tarball = upload(tarpath)
     with cd(build_dir):
         run('tar Jxvf %s' % tarball)
@@ -38,6 +35,21 @@ def deploy(tarpath):
             rpm()
             with cd('rpm/RPMS'):
                 update()
+
+@task
+def deploy(tarpath):
+    with hide('stdout'):
+        vdeploy(tarpath)
+
+def clearlog(target):
+    if target in ('supervdsmd', 'vdsmd'):
+        run('sudo truncate -s 0 /var/log/vdsm/%s.log' % (target))
+
+
+def service(target, action):
+    if (target in ('sanlock', 'supervdsmd', 'vdsmd', 'libvirtd') and
+        action in ('stop', 'start', 'restart', 'status')):
+        run('sudo service %s %s' % (target, action))
 
 
 def upload(tarpath):
