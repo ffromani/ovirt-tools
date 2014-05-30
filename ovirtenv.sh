@@ -18,6 +18,7 @@ function ovirtls()
 				echo -n " $item"
 			fi
 		done
+		echo
 	else
 		echo "no engines available."
 	fi
@@ -27,7 +28,7 @@ function ovirton()
 {
 	if [ -z "$1" ]; then
 		echo "missing oVirt env"
-	elif [ ! -x "$OVIRT_ROOT/$1/$bin/engine-setup" ]; then
+	elif [ ! -x "$OVIRT_ROOT/$1/bin/engine-setup" ]; then
 		echo "invalid oVirt env: {$1}"
 	else
 		export OVIRT_ENV="$1"
