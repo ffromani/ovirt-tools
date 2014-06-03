@@ -8,6 +8,9 @@ if [ -f "$HOME/.ovirtenvrc" ]; then
 	. $HOME/.ovirtenvrc
 fi
 
+export OVIRT_ROOT
+
+
 function ovirtls()
 {
 	echo "oVirt engine root is: $OVIRT_ROOT"
@@ -53,7 +56,7 @@ function ovirtstart()
 	if [ -z "$OVIRT_ENV" ]; then
 		echo "not into an oVirt env (use ovirton)"
 	else
-		cd "$OVIRT_ENV/bin"
+		cd "$OVIRT_ROOT/$OVIRT_ENV/bin"
 		./ovirt-engine.py start
 	fi
 }
