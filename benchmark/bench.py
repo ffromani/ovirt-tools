@@ -14,7 +14,8 @@ from ovirtsdk.api import API
 class VMHandle(object):
     def __init__(self, api, a, name='Tiny'):
         self._api = api
-        self._name = '%s%02i' % (name, a)
+        self._name = '%s%i' % (name, a)
+        logging.info(self._name)
         self._marks = {'created': time.time()}
 
     def _mark(self, state):
@@ -96,8 +97,8 @@ def wait(vms, state='up'):
         time.sleep(1)
 
 
-def mass_start(n, pool, api):
-    vms = [ VMHandle(api, a) for a in range(n) ]
+def mass_start(name, n, pool, api):
+    vms = [ VMHandle(api, a, name) for a in range(n) ]
     start(vms, pool)
     wait(vms)
     stop(vms)
@@ -132,6 +133,8 @@ if __name__ == '__main__':
                         type=int, default=3)
     parser.add_argument('-n', '--num-vms', help='number of VMs [32]',
                         type=int, default=32)
+    parser.add_argument('-N', '--vm-name', help='basename of VM [Tiny]',
+                        type=str, default='Tiny')
     parser.add_argument('-s', '--serially', help='run VMs serially',
                         action='store_false', dest='parallel')
     parser.add_argument('-S', '--store-result', help='store result to file',
@@ -146,5 +149,5 @@ if __name__ == '__main__':
     else:
         pool = None
 
-    res = bench(args.runs, mass_start, args.num_vms, pool, api)
+    res = bench(args.runs, mass_start, args.vm_name, args.num_vms, pool, api)
     dump(res, args.store_result)

@@ -81,7 +81,7 @@ def update():
         # default
         pkgs = [('vdsm', None, None, 'x86_64'),
                 ('vdsm-python', None, None, 'x86_64'),
-                ('vdsm-api', None, None, 'noarch'),
+                ('vdsm-jsonrpc', None, None, 'noarch'),
                 ('vdsm-xmlrpc', None, None, 'noarch'),
                 ('vdsm-cli', None, None, 'noarch'),
                 ('vdsm-python-zombiereaper', None, None, 'noarch')]

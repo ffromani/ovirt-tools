@@ -11,7 +11,7 @@ api = API(url='http://engine:8080/api', username='user@internal', password='pass
 start = int(sys.argv[1])
 stop = int(sys.argv[2])
 
-for a in range(start, stop):
-    name = 'Tiny%02i' % a
+for i in range(start, stop):
+    name = 'SuperTiny_C%03i' % i
     print 'VM %s: %s' % (name,
                          api.vms.get(name).status.state)
